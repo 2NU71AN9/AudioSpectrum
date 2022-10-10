@@ -106,6 +106,7 @@
 		D2B7B7CD28F150B300E08755 /* RecordDemo */ = {
 			isa = PBXGroup;
 			children = (
+				D22B6F4028F2677F00B191C7 /* Audio */,
 				D2B7B7E228F153C200E08755 /* Classes */,
 				D2B7B7CE28F150B300E08755 /* AppDelegate.swift */,
 				D2B7B7D028F150B300E08755 /* SceneDelegate.swift */,
@@ -122,7 +123,6 @@
 		D2B7B7E228F153C200E08755 /* Classes */ = {
 			isa = PBXGroup;
 			children = (
-				D22B6F4028F2677F00B191C7 /* Audio */,
 				D22B6F4728F2693D00B191C7 /* RealtimeAnalyzer.swift */,
 				D2B7B7E328F153E100E08755 /* AudioPlayer.swift */,
 				D2FA9BE828F16D0900122DE0 /* AudioRecorder.swift */,
