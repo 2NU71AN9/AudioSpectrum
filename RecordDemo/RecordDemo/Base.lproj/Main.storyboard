@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="21225" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="BYZ-38-t0r">
+    <device id="retina6_0" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="21207"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--View Controller-->
+        <scene sceneID="tne-QT-ifu">
+            <objects>
+                <viewController id="BYZ-38-t0r" customClass="ViewController" customModule="RecordDemo" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="8bC-Xf-vdC">
+                        <rect key="frame" x="0.0" y="0.0" width="390" height="844"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="31" translatesAutoresizingMaskIntoConstraints="NO" id="bYV-O1-vDJ">
+                                <rect key="frame" x="148.33333333333334" y="313.33333333333331" width="93.333333333333343" height="230.33333333333331"/>
+                                <subviews>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="A0t-uQ-nPX">
+                                        <rect key="frame" x="0.0" y="0.0" width="93.333333333333329" height="34.333333333333336"/>
+                                        <state key="normal" title="Button"/>
+                                        <buttonConfiguration key="configuration" style="filled" title="开始录音"/>
+                                        <connections>
+                                            <action selector="startRecord:" destination="BYZ-38-t0r" eventType="touchUpInside" id="FbX-jG-rtM"/>
+                                        </connections>
+                                    </button>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="9ri-6e-Iaf">
+                                        <rect key="frame" x="0.0" y="65.333333333333371" width="93.333333333333329" height="34.333333333333343"/>
+                                        <state key="normal" title="Button"/>
+                                        <buttonConfiguration key="configuration" style="filled" title="结束录音"/>
+                                        <connections>
+                                            <action selector="stopRecord:" destination="BYZ-38-t0r" eventType="touchUpInside" id="DY2-Ee-kF2"/>
+                                        </connections>
+                                    </button>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="EGB-25-p0V">
+                                        <rect key="frame" x="0.0" y="130.66666666666669" width="93.333333333333329" height="34.333333333333343"/>
+                                        <state key="normal" title="Button"/>
+                                        <buttonConfiguration key="configuration" style="filled" title="播放录音"/>
+                                        <connections>
+                                            <action selector="playRecord:" destination="BYZ-38-t0r" eventType="touchUpInside" id="AQQ-EW-D5U"/>
+                                        </connections>
+                                    </button>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="dvp-wW-v0R">
+                                        <rect key="frame" x="0.0" y="196" width="93.333333333333329" height="34.333333333333343"/>
+                                        <state key="normal" title="Button"/>
+                                        <buttonConfiguration key="configuration" style="filled" title="停止播放"/>
+                                        <connections>
+                                            <action selector="stopPlay:" destination="BYZ-38-t0r" eventType="touchUpInside" id="6vi-qM-1T8"/>
+                                        </connections>
+                                    </button>
+                                </subviews>
+                            </stackView>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="uRx-Wh-hfY" customClass="SpectrumView" customModule="RecordDemo" customModuleProvider="target">
+                                <rect key="frame" x="0.0" y="47" width="390" height="200"/>
+                                <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="200" id="GlI-GS-GQd"/>
+                                </constraints>
+                            </view>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <constraints>
+                            <constraint firstItem="bYV-O1-vDJ" firstAttribute="centerY" secondItem="6Tk-OE-BBY" secondAttribute="centerY" id="PDb-jy-cqY"/>
+                            <constraint firstItem="uRx-Wh-hfY" firstAttribute="top" secondItem="6Tk-OE-BBY" secondAttribute="top" id="ibO-PP-ipW"/>
+                            <constraint firstItem="uRx-Wh-hfY" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" id="imi-I3-Wgf"/>
+                            <constraint firstItem="bYV-O1-vDJ" firstAttribute="centerX" secondItem="6Tk-OE-BBY" secondAttribute="centerX" id="ylc-9J-sOz"/>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="uRx-Wh-hfY" secondAttribute="trailing" id="zQ7-Jt-4l8"/>
+                        </constraints>
+                    </view>
+                    <connections>
+                        <outlet property="spectrumView" destination="uRx-Wh-hfY" id="Mt9-I9-OMQ"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="138" y="4"/>
+        </scene>
+    </scenes>
+    <resources>
+        <systemColor name="systemBackgroundColor">
+            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+    </resources>
+</document>

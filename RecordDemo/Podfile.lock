@@ -1,0 +1,16 @@
+PODS:
+  - CocoaDebug (1.7.2)
+
+DEPENDENCIES:
+  - CocoaDebug
+
+SPEC REPOS:
+  trunk:
+    - CocoaDebug
+
+SPEC CHECKSUMS:
+  CocoaDebug: 61cf93ada6ce8f3407507dc01f9b874d91ac1d5c
+
+PODFILE CHECKSUM: 994c7d73b7c6a1871766fcf9bbf5e18886bfff55
+
+COCOAPODS: 1.11.3
