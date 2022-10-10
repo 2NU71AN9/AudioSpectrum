@@ -10,7 +10,7 @@ Pod::Spec.new do |s|
   s.author       = { "2UN7" => "1491859758@qq.com" }
   s.platform     = :ios, "13.0"
   s.source       = { :git => "https://github.com/2NU71AN9/AudioSpectrum.git", :tag => "v#{s.version}" } #存储库的git地址，以及tag值
-  s.source_files = "RecordDemo/Classes/**/*.{h,m,swift,xib,xcassets,mp3}"
+  s.source_files = "RecordDemo/Classes/**/*.{h,m,swift,xib,xcassets}"
   
   s.requires_arc = true #是否支持ARC
   
