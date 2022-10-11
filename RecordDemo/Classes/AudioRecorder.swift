@@ -27,15 +27,17 @@ public class AudioRecorder {
         let path = NSSearchPathForDirectoriesInDomains(.cachesDirectory, .userDomainMask, true).first ?? (NSHomeDirectory() + "/Library/Audios")
         var url: URL
         if #available(iOS 16.0, *) {
-            url = URL(filePath: String(format: "%@/%@.wav", path, fileName))
+            url = URL(filePath: String(format: "%@/%@.aac", path, fileName))
         } else {
-            url = URL(fileURLWithPath: String(format: "%@/%@.wav", path, fileName))
+            url = URL(fileURLWithPath: String(format: "%@/%@.aac", path, fileName))
         }
+        // PCM=>wav AAC=>aac
         let recordSetting: [String: Any] = [AVSampleRateKey: NSNumber(value: 22050.0),//采样率
-                                              AVFormatIDKey: NSNumber(value: kAudioFormatLinearPCM),//音频格式
+                                              AVFormatIDKey: NSNumber(value: kAudioFormatMPEG4AAC),
+//                                              AVFormatIDKey: NSNumber(value: kAudioFormatLinearPCM),//音频格式
                                      AVLinearPCMBitDepthKey: NSNumber(value: 16),//采样位数
-                                      AVNumberOfChannelsKey: NSNumber(value: 2),//通道数
-                                   AVEncoderAudioQualityKey: NSNumber(value: AVAudioQuality.min.rawValue)//录音质量
+                                      AVNumberOfChannelsKey: NSNumber(value: 1),//通道数
+                                   AVEncoderAudioQualityKey: NSNumber(value: AVAudioQuality.high.rawValue)//录音质量
         ]
         let recorder = try? AVAudioRecorder(url: url, settings: recordSetting)
         recorder?.isMeteringEnabled = true
