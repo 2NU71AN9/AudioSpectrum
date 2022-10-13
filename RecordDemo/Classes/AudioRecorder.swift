@@ -24,7 +24,14 @@ public class AudioRecorder {
     public lazy var analyzer = RealtimeAnalyzer(fftSize: 2048, frequencyBands: frequencyBands)
     private lazy var engine = AVAudioEngine()
     public lazy var recorder: AVAudioRecorder = {
-        let path = NSSearchPathForDirectoriesInDomains(.cachesDirectory, .userDomainMask, true).first ?? (NSHomeDirectory() + "/Library/Audios")
+        var path = NSSearchPathForDirectoriesInDomains(.cachesDirectory, .userDomainMask, true).first ?? (NSHomeDirectory() + "/Library/Caches")
+        path += "/Audios"
+        let exist = FileManager.default.fileExists(atPath: path)
+        if !exist {
+            //如果文件夹不存在
+            try? FileManager.default.createDirectory(atPath: path, withIntermediateDirectories: true)
+        }
+        
         var url: URL
         if #available(iOS 16.0, *) {
             url = URL(filePath: String(format: "%@/%@.aac", path, fileName))

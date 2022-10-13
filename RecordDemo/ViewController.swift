@@ -16,19 +16,20 @@ class ViewController: UIViewController {
     @IBOutlet weak var slider: UISlider!
     
     private lazy var recorder: AudioRecorder = {
-        let recorder = AudioRecorder(fileName: "123", frequencyBands: 80)
+        let recorder = AudioRecorder(fileName: "222", frequencyBands: 80)
         recorder.delegate = self
         return recorder
     }()
     private lazy var player: AudioPlayer = {
-        let url = Bundle.main.url(forResource: trackPaths[0], withExtension: nil)!
-//        let path = NSSearchPathForDirectoriesInDomains(.cachesDirectory, .userDomainMask, true).first ?? (NSHomeDirectory() + "/Library/Audios")
-//        var url: URL
-//        if #available(iOS 16.0, *) {
-//            url = URL(filePath: String(format: "%@/123.aac", path))
-//        } else {
-//            url = URL(fileURLWithPath: String(format: "%@/123.aac", path))
-//        }
+//        let url = Bundle.main.url(forResource: trackPaths[0], withExtension: nil)!
+        var path = NSSearchPathForDirectoriesInDomains(.cachesDirectory, .userDomainMask, true).first ?? (NSHomeDirectory() + "/Library/Caches")
+        path += "/Audios"
+        var url: URL
+        if #available(iOS 16.0, *) {
+            url = URL(filePath: String(format: "%@/111.aac", path))
+        } else {
+            url = URL(fileURLWithPath: String(format: "%@/111.aac", path))
+        }
         let player = AudioPlayer(url: url, frequencyBands: 80)
         player.delegate = self
         return player
@@ -59,9 +60,9 @@ class ViewController: UIViewController {
         let path = NSSearchPathForDirectoriesInDomains(.cachesDirectory, .userDomainMask, true).first ?? (NSHomeDirectory() + "/Library/Audios")
         var url: URL
         if #available(iOS 16.0, *) {
-            url = URL(filePath: String(format: "%@/123.aac", path))
+            url = URL(filePath: String(format: "%@/111.wav", path))
         } else {
-            url = URL(fileURLWithPath: String(format: "%@/123.aac", path))
+            url = URL(fileURLWithPath: String(format: "%@/111.wav", path))
         }
         player.audioUrl = url
     }
@@ -74,6 +75,7 @@ class ViewController: UIViewController {
     }
     @IBAction func stopPlay(_ sender: Any) {
         player.stop()
+        joinAduio()
     }
     
     @IBAction func sliderAction(_ sender: UISlider) {
@@ -82,6 +84,20 @@ class ViewController: UIViewController {
             return
         }
         player.play(at: Int(Double(sender.value) * player.audioDuration))
+    }
+    
+    func joinAduio() {
+        let path1 = (NSSearchPathForDirectoriesInDomains(.cachesDirectory, .userDomainMask, true).first ?? (NSHomeDirectory() + "/Library/Caches")) + "/Audios/111.wav"
+        let path2 = (NSSearchPathForDirectoriesInDomains(.cachesDirectory, .userDomainMask, true).first ?? (NSHomeDirectory() + "/Library/Caches")) + "/Audios/222.wav"
+
+        let path4 = (NSSearchPathForDirectoriesInDomains(.cachesDirectory, .userDomainMask, true).first ?? (NSHomeDirectory() + "/Library/Caches")) + "/Audios/666.m4a"
+
+        AudioFileJoin.joinAudios([path1, path2], outputPath: path4) { path in
+            print("$$$$$$$$合成完成$$$$$$$$", path)
+        }
+//        AudioFileJoin.addAudioFrom(path1, with: path2, outputPath: path3) { path in
+//            print("$$$$$$$$合成完成$$$$$$$$", path)
+//        }
     }
 }
 
