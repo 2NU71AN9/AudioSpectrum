@@ -16,7 +16,7 @@ class ViewController: UIViewController {
     @IBOutlet weak var slider: UISlider!
     
     private lazy var recorder: AudioRecorder = {
-        let recorder = AudioRecorder(fileName: "222", frequencyBands: 80)
+        let recorder = AudioRecorder(frequencyBands: 80)
         recorder.delegate = self
         return recorder
     }()
@@ -112,6 +112,9 @@ extension ViewController: AudioSpectrumRecorderDelegate {
             self.spectrumView.spectra = spectrum
         }
     }
+    func recorderStart() { }
+    func recorderPause() { }
+    func recorderStop() { }
 }
 
 extension ViewController: AudioSpectrumPlayerDelegate {

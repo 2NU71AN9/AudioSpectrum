@@ -10,6 +10,9 @@ import AVFoundation
 import Accelerate
 
 public protocol AudioSpectrumRecorderDelegate: AnyObject {
+    func recorderStart()
+    func recorderPause()
+    func recorderStop()
     func recorder(_ recorder: AudioRecorder, didGenerateSpectrum spectrum: [[Float]])
     func recorderNoSpectrum()
 }
@@ -17,16 +20,14 @@ public protocol AudioSpectrumRecorderDelegate: AnyObject {
 public class AudioRecorder {
     
     public weak var delegate: AudioSpectrumRecorderDelegate?
-    
-    /// 保存每个录音文件
-    public var filePaths: [String] = []
-    
     /// 保存路径
     private let fileDir = (NSSearchPathForDirectoriesInDomains(.cachesDirectory, .userDomainMask, true).first ?? (NSHomeDirectory() + "/Library/Caches")) + "/Audios"
-    /// 文件名
-    private var fileName: String
     /// 文件全路径
-    private var filePath: URL
+    private var filePath: String
+    /// 保存每个录音文件
+    private var filePaths: [String] = []
+    /// 合成后录音的保存路径
+    private var outputPath: String?
     /// 频带数量
     private var frequencyBands: Int
     public lazy var analyzer = RealtimeAnalyzer(fftSize: 2048, frequencyBands: frequencyBands)
@@ -40,26 +41,20 @@ public class AudioRecorder {
                                       AVNumberOfChannelsKey: NSNumber(value: 1),//通道数
                                    AVEncoderAudioQualityKey: NSNumber(value: AVAudioQuality.high.rawValue)//录音质量
         ]
-        let recorder = try? AVAudioRecorder(url: filePath, settings: recordSetting)
+        let recorder = try? AVAudioRecorder(url: string2url(filePath), settings: recordSetting)
         recorder?.isMeteringEnabled = true
         return recorder ?? AVAudioRecorder()
     }()
         
-    public init(fileName: String, frequencyBands: Int = 80) {
-        self.fileName = fileName
+    public init(frequencyBands: Int = 80) {
+        let fileName = UUID().uuidString
         self.frequencyBands = frequencyBands
         let exist = FileManager.default.fileExists(atPath: fileDir)
         if !exist {
             //如果文件夹不存在
             try? FileManager.default.createDirectory(atPath: fileDir, withIntermediateDirectories: true)
         }
-        var url: URL
-        if #available(iOS 16.0, *) {
-            url = URL(filePath: String(format: "%@/%@.aac", fileDir, fileName))
-        } else {
-            url = URL(fileURLWithPath: String(format: "%@/%@.aac", fileDir, fileName))
-        }
-        self.filePath = url
+        self.filePath = String(format: "%@/%@.aac", fileDir, fileName)
         
         engine.inputNode.removeTap(onBus: 0)
         engine.inputNode.installTap(onBus: 0, bufferSize: 2048, format: nil, block: { [weak self] buffer, when in
@@ -72,10 +67,30 @@ public class AudioRecorder {
             let spectra = strongSelf.analyzer.analyse(with: buffer)
             strongSelf.delegate?.recorder(strongSelf, didGenerateSpectrum: spectra.count > 1 ? spectra : [spectra.first ?? [0], [0]])
         })
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(handleInterruption(_ :)), name: AVAudioSession.interruptionNotification, object: AVAudioSession.sharedInstance())
+    }
+    
+    deinit {
+        filePaths.forEach {
+            try? FileManager.default.removeItem(atPath: $0)
+        }
+        NotificationCenter.default.removeObserver(self)
     }
 }
 
 extension AudioRecorder {
+    /// 重录
+    public func reRecord() {
+        filePaths.forEach {
+            try? FileManager.default.removeItem(atPath: $0)
+        }
+        if let outputPath = outputPath {
+            try? FileManager.default.removeItem(atPath: outputPath)
+        }
+        record()
+    }
+    
     /// 开始录音
     public func record() {
         recorder.stop()
@@ -83,6 +98,7 @@ extension AudioRecorder {
         recorder.record()
         engine.prepare()
         try? engine.start()
+        delegate?.recorderStart()
     }
     
     /// 暂停录音
@@ -91,6 +107,7 @@ extension AudioRecorder {
         engine.pause()
         delegate?.recorderNoSpectrum()
         rename()
+        delegate?.recorderPause()
     }
     
     /// 停止录音
@@ -99,12 +116,17 @@ extension AudioRecorder {
         engine.stop()
         delegate?.recorderNoSpectrum()
         rename()
+        delegate?.recorderStop()
     }
     
     /// 合成一个录音文件
     public func joinAudios(complete: @escaping (String?) -> Void) {
-        AudioFileJoin.joinAudios(filePaths, outputPath: filePath.absoluteString) { path in
+        outputPath = String(format: "%@/%@.m4a", fileDir, UUID().uuidString)
+        AudioFileJoin.joinAudios(filePaths, outputPath: outputPath!) { [weak self] path in
             complete(path)
+            self?.filePaths.forEach {
+                try? FileManager.default.removeItem(atPath: $0)
+            }
         }
     }
 }
@@ -112,9 +134,10 @@ extension AudioRecorder {
 extension AudioRecorder {
     /// 文件重命名
     private func rename() {
-        let newPath = String(format: "%@/%@.%@", fileDir, UUID().uuidString, filePath.pathExtension)
+        guard FileManager.default.fileExists(atPath: filePath) else { return }
+        let newPath = String(format: "%@/%@.%@", fileDir, UUID().uuidString, string2url(filePath).pathExtension)
         do {
-            try FileManager.default.moveItem(at: filePath, to: string2url(newPath))
+            try FileManager.default.moveItem(at: string2url(filePath), to: string2url(newPath))
             filePaths.append(newPath)
         } catch let error {
             print(error)
@@ -126,6 +149,15 @@ extension AudioRecorder {
             return URL(filePath: str)
         } else {
             return URL(fileURLWithPath: str)
+        }
+    }
+    
+    @objc private func handleInterruption(_ notification: Notification) {
+        guard let info = notification.userInfo,
+              let reasonValue = info[AVAudioSessionInterruptionTypeKey] as? UInt,
+                let reason = AVAudioSession.InterruptionType(rawValue: reasonValue) else { return }
+        if reason == .began {
+            pause()
         }
     }
 }

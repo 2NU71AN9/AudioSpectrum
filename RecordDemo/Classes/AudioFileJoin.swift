@@ -15,10 +15,10 @@ public class AudioFileJoin {
     ///   - outputPath: 输出地址 后缀是.m4a
     ///   - complete: 完成回调
     public static func joinAudios(_ paths: [String], outputPath: String, complete: @escaping (String?) -> Void) {
-        guard paths.count > 1 else {
-            complete(paths.first)
-            return
-        }
+//        guard paths.count > 1 else {
+//            complete(paths.first)
+//            return
+//        }
         
         let assets = paths.compactMap { path in
             let url: URL

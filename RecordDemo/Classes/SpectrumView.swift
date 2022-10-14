@@ -29,31 +29,67 @@ public class SpectrumView: UIView {
     }
     /// 左声道低频颜色
     @IBInspectable
-    public var leftChannlLowColor: UIColor = UIColor.init(red: 255/255, green: 197/255, blue: 0/255, alpha: 1.0)
+    public var leftChannlLowColor: UIColor = UIColor.init(red: 255/255, green: 197/255, blue: 0/255, alpha: 1.0) {
+        didSet {
+            setupView()
+        }
+    }
     /// 左声道高频颜色
     @IBInspectable
-    public var leftChannlHighColor: UIColor = UIColor.init(red: 194/255, green: 21/255, blue: 0/255, alpha: 1.0)
+    public var leftChannlHighColor: UIColor = UIColor.init(red: 194/255, green: 21/255, blue: 0/255, alpha: 1.0) {
+        didSet {
+            setupView()
+        }
+    }
     /// 右声道低频颜色
     @IBInspectable
-    public var rightChannlLowColor: UIColor = UIColor.init(red: 15/255, green: 52/255, blue: 67/255, alpha: 1.0)
+    public var rightChannlLowColor: UIColor = UIColor.init(red: 15/255, green: 52/255, blue: 67/255, alpha: 1.0) {
+        didSet {
+            setupView()
+        }
+    }
     /// 右声道高频颜色
     @IBInspectable
-    public var rightChannlHighColor: UIColor = UIColor.init(red: 52/255, green: 232/255, blue: 158/255, alpha: 1.0)
+    public var rightChannlHighColor: UIColor = UIColor.init(red: 52/255, green: 232/255, blue: 158/255, alpha: 1.0) {
+        didSet {
+            setupView()
+        }
+    }
     /// 每个柱宽度
     @IBInspectable
-    public var barWidth: CGFloat = 3.0
+    public var barWidth: CGFloat = 3.0 {
+        didSet {
+            setupView()
+        }
+    }
     /// 间距
     @IBInspectable
-    public var barSpace: CGFloat = 1.0
+    public var barSpace: CGFloat = 1.0 {
+        didSet {
+            setupView()
+        }
+    }
     /// 最小高度
     @IBInspectable
-    public var barMinHeight: CGFloat = 10.0
+    public var barMinHeight: CGFloat = 10.0 {
+        didSet {
+            setupView()
+        }
+    }
     /// 上边距
     @IBInspectable
-    public var topSpace: CGFloat = 0.0
+    public var topSpace: CGFloat = 0.0 {
+        didSet {
+            setupView()
+        }
+    }
     /// 下边距
     @IBInspectable
-    public var bottomSpace: CGFloat = 0.0
+    public var bottomSpace: CGFloat = 0.0 {
+        didSet {
+            setupView()
+        }
+    }
     
     /// 数据源
     public var spectra:[[Float]]? {
