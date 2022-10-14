@@ -47,6 +47,7 @@ public class AudioRecorder {
     }()
         
     public init(frequencyBands: Int = 80) {
+        try? AVAudioSession.sharedInstance().setCategory(.playAndRecord, options: .defaultToSpeaker)
         let fileName = UUID().uuidString
         self.frequencyBands = frequencyBands
         let exist = FileManager.default.fileExists(atPath: fileDir)

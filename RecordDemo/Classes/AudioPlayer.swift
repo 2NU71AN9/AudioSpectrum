@@ -44,6 +44,9 @@ public class AudioPlayer {
                             strongSelf.currentDuration = strongSelf.preTime + nowTime
                             if strongSelf.currentDuration <= strongSelf.audioDuration {
                                 strongSelf.delegate?.player(currentDuration: strongSelf.currentDuration, duration: strongSelf.audioDuration, playEnded: strongSelf.currentDuration >= strongSelf.audioDuration)
+                            } else {
+                                strongSelf.pause()
+                                strongSelf.delegate?.player(currentDuration: strongSelf.audioDuration, duration: strongSelf.audioDuration, playEnded: true)
                             }
                         }
                     }
