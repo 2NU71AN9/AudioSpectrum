@@ -19,9 +19,23 @@ public protocol AudioSpectrumRecorderDelegate: AnyObject {
 
 public class AudioRecorder {
     
+    public enum FileType: String {
+        case wav
+        case aac
+        
+        var formatID: AudioFormatID {
+            switch self {
+            case .wav:
+                return kAudioFormatLinearPCM
+            case .aac:
+                return kAudioFormatMPEG4AAC
+            }
+        }
+    }
+    
     public weak var delegate: AudioSpectrumRecorderDelegate?
     /// 保存路径
-    private let fileDir = (NSSearchPathForDirectoriesInDomains(.cachesDirectory, .userDomainMask, true).first ?? (NSHomeDirectory() + "/Library/Caches")) + "/Audios"
+    public let fileDir = (NSSearchPathForDirectoriesInDomains(.cachesDirectory, .userDomainMask, true).first ?? (NSHomeDirectory() + "/Library/Caches")) + "/Audios"
     /// 文件全路径
     private var filePath: String
     /// 保存每个录音文件
@@ -30,13 +44,14 @@ public class AudioRecorder {
     private var outputPath: String?
     /// 频带数量
     private var frequencyBands: Int
+    /// 文件类型
+    private var fileType: FileType = .wav
     public lazy var analyzer = RealtimeAnalyzer(fftSize: 2048, frequencyBands: frequencyBands)
     private lazy var engine = AVAudioEngine()
     public lazy var recorder: AVAudioRecorder = {
         // PCM=>wav AAC=>aac
         let recordSetting: [String: Any] = [AVSampleRateKey: NSNumber(value: 22050.0),//采样率
-                                              AVFormatIDKey: NSNumber(value: kAudioFormatMPEG4AAC),
-//                                              AVFormatIDKey: NSNumber(value: kAudioFormatLinearPCM),//音频格式
+                                              AVFormatIDKey: NSNumber(value: fileType.formatID),//音频格式
                                      AVLinearPCMBitDepthKey: NSNumber(value: 16),//采样位数
                                       AVNumberOfChannelsKey: NSNumber(value: 1),//通道数
                                    AVEncoderAudioQualityKey: NSNumber(value: AVAudioQuality.high.rawValue)//录音质量
@@ -46,16 +61,17 @@ public class AudioRecorder {
         return recorder ?? AVAudioRecorder()
     }()
         
-    public init(frequencyBands: Int = 80) {
+    public init(frequencyBands: Int = 80, fileType: FileType = .wav) {
         try? AVAudioSession.sharedInstance().setCategory(.playAndRecord, options: .defaultToSpeaker)
         let fileName = UUID().uuidString
         self.frequencyBands = frequencyBands
+        self.fileType = fileType
         let exist = FileManager.default.fileExists(atPath: fileDir)
         if !exist {
             //如果文件夹不存在
             try? FileManager.default.createDirectory(atPath: fileDir, withIntermediateDirectories: true)
         }
-        self.filePath = String(format: "%@/%@.aac", fileDir, fileName)
+        self.filePath = String(format: "%@/%@.%@", fileDir, fileName, fileType.rawValue)
         
         engine.inputNode.removeTap(onBus: 0)
         engine.inputNode.installTap(onBus: 0, bufferSize: 2048, format: nil, block: { [weak self] buffer, when in
@@ -122,8 +138,8 @@ extension AudioRecorder {
     
     /// 合成一个录音文件
     public func joinAudios(complete: @escaping (String?) -> Void) {
-        outputPath = String(format: "%@/%@.m4a", fileDir, UUID().uuidString)
-        AudioFileJoin.joinAudios(filePaths, outputPath: outputPath!) { [weak self] path in
+        outputPath = String(format: "%@/%@.%@", fileDir, UUID().uuidString, fileType.rawValue)
+        AudioFileJoin.appendAudios(filePaths, outputPath: outputPath!) { [weak self] path in
             complete(path)
             self?.filePaths.forEach {
                 try? FileManager.default.removeItem(atPath: $0)

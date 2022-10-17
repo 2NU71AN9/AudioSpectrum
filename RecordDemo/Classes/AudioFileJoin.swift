@@ -9,7 +9,7 @@ import UIKit
 import AVFoundation
 
 public class AudioFileJoin {
-    /// 音频拼接
+    /// 音频拼接, 音轨合成, 混响, 只能输m4a格式
     /// - Parameters:
     ///   - paths: 音频地址数组
     ///   - outputPath: 输出地址 后缀是.m4a
@@ -71,6 +71,41 @@ public class AudioFileJoin {
             default:
                 print("未知状态")
             }
+        }
+    }
+    
+    
+    /// 音频拼接
+    /// - Parameters:
+    ///   - paths: 音频地址数组
+    ///   - outputPath: 输出地址
+    ///   - complete: 完成回调
+    public static func appendAudios(_ paths: [String], outputPath: String, complete: @escaping (String?) -> Void) {
+        let datas = paths.compactMap { path in
+            let url: URL
+            if #available(iOS 16.0, *) {
+                url = URL(filePath: path)
+            } else {
+                url = URL(fileURLWithPath: path)
+            }
+            return try? Data(contentsOf: url)
+        }
+        
+        var totoalData = Data()
+        for data in datas {
+            totoalData.append(data)
+        }
+        let outputUrl: URL
+        if #available(iOS 16.0, *) {
+            outputUrl = URL(filePath: outputPath)
+        } else {
+            outputUrl = URL(fileURLWithPath: outputPath)
+        }
+        do {
+            try totoalData.write(to: outputUrl)
+            complete(outputPath)
+        } catch {
+            complete(nil)
         }
     }
 }
