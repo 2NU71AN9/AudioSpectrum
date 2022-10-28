@@ -10,7 +10,14 @@ import AVFoundation
 import Accelerate
 import MediaPlayer
 
+public enum AudioPlayerState {
+    case playing
+    case pause
+    case stop
+}
+
 public protocol AudioSpectrumPlayerDelegate: AnyObject {
+    func playerStateChanged(state: AudioPlayerState)
     func player(currentDuration: Double, duration: Double, playEnded: Bool)
     func player(_ player: AudioPlayer, didGenerateSpectrum spectrum: [[Float]])
     func playerNoSpectrum()
@@ -64,6 +71,11 @@ public class AudioPlayer {
     public var audioUrl: URL? {
         didSet {
             setupAudio()
+        }
+    }
+    public private(set) var playerState: AudioPlayerState = .stop {
+        didSet {
+            delegate?.playerStateChanged(state: playerState)
         }
     }
     public private(set) var audioFile: AVAudioFile?
@@ -128,6 +140,7 @@ extension AudioPlayer {
         player.scheduleSegment(audioFile, startingFrame: sampleTime, frameCount: AVAudioFrameCount(audioFile.length - sampleTime), at: nil)
         preTime = time
         player.play()
+        playerState = .playing
     }
     public func play(at time: Int) {
         guard let audioFile = audioFile else { return }
@@ -140,17 +153,20 @@ extension AudioPlayer {
         let sampleTime = AVAudioFramePosition(time * audioFile.processingFormat.sampleRate)
         player.scheduleSegment(audioFile, startingFrame: sampleTime, frameCount: AVAudioFrameCount(audioFile.length - sampleTime), at: nil)
         player.play()
+        playerState = .playing
     }
     /// 暂停播放
     public func pause() {
         player.pause()
         engine.pause()
+        playerState = .pause
     }
     /// 停止播放
     public func stop() {
         player.stop()
         engine.stop()
         delegate?.playerNoSpectrum()
+        playerState = .stop
     }
 }
 
