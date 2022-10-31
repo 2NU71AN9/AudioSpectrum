@@ -30,6 +30,7 @@ public class AudioEasyPlayer: NSObject {
         return player
     }()
     
+    private let nowPlayingC = MPNowPlayingInfoCenter.default()
     private let remoteC = MPRemoteCommandCenter.shared()
     private lazy var timer = Timer(fire: Date.distantFuture, interval: 0.5, repeats: true) { [weak self] _ in
         self?.delegate?.player(currentDuration: self?.player?.currentTime ?? 0, duration: self?.player?.duration ?? 0)
@@ -58,7 +59,9 @@ public class AudioEasyPlayer: NSObject {
     deinit {
         NotificationCenter.default.removeObserver(self)
         timer.invalidate()
+        player?.stop()
         player = nil
+        nowPlayingC.nowPlayingInfo = [:]
     }
 }
 
@@ -74,6 +77,17 @@ extension AudioEasyPlayer: AVAudioPlayerDelegate {
 }
 
 extension AudioEasyPlayer {
+    /// 设置锁屏播放
+    private func setNowPlayingCenter() {
+        guard let player else { return }
+        nowPlayingC.nowPlayingInfo = [
+            MPMediaItemPropertyTitle: "正在播放",
+            MPNowPlayingInfoPropertyElapsedPlaybackTime: player.currentTime,
+            MPMediaItemPropertyPlaybackDuration: player.duration,
+            MPNowPlayingInfoPropertyAssetURL: audioUrl
+        ]
+    }
+    
     /// 耳机是否链接
     private var isEarConnect: Bool {
         let type = AVAudioSession.sharedInstance().currentRoute.outputs.first?.portType ?? .builtInSpeaker
@@ -116,11 +130,8 @@ extension AudioEasyPlayer {
         remoteC.pauseCommand.isEnabled = true
         remoteC.stopCommand.isEnabled = true
         remoteC.togglePlayPauseCommand.isEnabled = true
+        remoteC.changePlaybackPositionCommand.isEnabled = true
         remoteC.playCommand.addTarget { [weak self] event in
-            if !(self?.isEarConnect ?? true) {
-                try? AVAudioSession.sharedInstance().setCategory(.playAndRecord, options: .allowBluetoothA2DP)
-                try? AVAudioSession.sharedInstance().setActive(true)
-            }
             self?.play()
             return .success
         }
@@ -130,6 +141,12 @@ extension AudioEasyPlayer {
         }
         remoteC.stopCommand.addTarget { [weak self] event in
             self?.stop()
+            return .success
+        }
+        remoteC.changePlaybackPositionCommand.addTarget { [weak self] event in
+            if let event = event as? MPChangePlaybackPositionCommandEvent {
+                self?.play(at: event.positionTime)
+            }
             return .success
         }
     }
@@ -147,6 +164,7 @@ extension AudioEasyPlayer {
     public func play() {
         guard let player else { return }
         if player.play() {
+            setNowPlayingCenter()
             timer.fireDate = Date.distantPast
             delegate?.playerStateChanged(state: .playing)
         } else {
@@ -162,17 +180,20 @@ extension AudioEasyPlayer {
             player.currentTime = time
             delegate?.playerStateChanged(state: player.isPlaying ? .playing : .pause)
         }
+        setNowPlayingCenter()
     }
     public func pause() {
         guard let player else { return }
         player.pause()
         timer.fireDate = Date.distantFuture
         delegate?.playerStateChanged(state: player.isPlaying ? .playing : .pause)
+        setNowPlayingCenter()
     }
     public func stop() {
         guard let player else { return }
         player.stop()
         timer.fireDate = Date.distantFuture
         delegate?.playerStateChanged(state: player.isPlaying ? .playing : .stop)
+        setNowPlayingCenter()
     }
 }

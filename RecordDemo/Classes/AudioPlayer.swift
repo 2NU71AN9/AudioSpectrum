@@ -86,6 +86,7 @@ public class AudioPlayer {
     ///
     private var preTime: Double = 0
     
+    private let nowPlayingC = MPNowPlayingInfoCenter.default()
     private let remoteC = MPRemoteCommandCenter.shared()
     
     public init(url: URL, frequencyBands: Int = 80) {
@@ -141,6 +142,7 @@ extension AudioPlayer {
         preTime = time
         player.play()
         playerState = .playing
+        setNowPlayingCenter()
     }
     public func play(at time: Int) {
         guard let audioFile = audioFile else { return }
@@ -154,12 +156,14 @@ extension AudioPlayer {
         player.scheduleSegment(audioFile, startingFrame: sampleTime, frameCount: AVAudioFrameCount(audioFile.length - sampleTime), at: nil)
         player.play()
         playerState = .playing
+        setNowPlayingCenter()
     }
     /// 暂停播放
     public func pause() {
         player.pause()
         engine.pause()
         playerState = .pause
+        setNowPlayingCenter()
     }
     /// 停止播放
     public func stop() {
@@ -167,10 +171,21 @@ extension AudioPlayer {
         engine.stop()
         delegate?.playerNoSpectrum()
         playerState = .stop
+        setNowPlayingCenter()
     }
 }
 
 extension AudioPlayer {
+    /// 设置锁屏播放
+    private func setNowPlayingCenter() {
+        nowPlayingC.nowPlayingInfo = [
+            MPMediaItemPropertyTitle: "正在播放",
+            MPNowPlayingInfoPropertyElapsedPlaybackTime: currentDuration,
+            MPMediaItemPropertyPlaybackDuration: audioDuration,
+            MPNowPlayingInfoPropertyAssetURL: audioUrl
+        ]
+    }
+    
     /// 耳机是否链接
     private var isEarConnect: Bool {
         let type = AVAudioSession.sharedInstance().currentRoute.outputs.first?.portType ?? .builtInSpeaker
@@ -213,11 +228,8 @@ extension AudioPlayer {
         remoteC.pauseCommand.isEnabled = true
         remoteC.stopCommand.isEnabled = true
         remoteC.togglePlayPauseCommand.isEnabled = true
+        remoteC.changePlaybackPositionCommand.isEnabled = true
         remoteC.playCommand.addTarget { [weak self] event in
-            if !(self?.isEarConnect ?? true) {
-                try? AVAudioSession.sharedInstance().setCategory(.playAndRecord, options: .allowBluetoothA2DP)
-                try? AVAudioSession.sharedInstance().setActive(true)
-            }
             self?.play()
             return .success
         }
@@ -227,6 +239,12 @@ extension AudioPlayer {
         }
         remoteC.stopCommand.addTarget { [weak self] event in
             self?.stop()
+            return .success
+        }
+        remoteC.changePlaybackPositionCommand.addTarget { [weak self] event in
+            if let event = event as? MPChangePlaybackPositionCommandEvent {
+                self?.play(at: Int(event.positionTime))
+            }
             return .success
         }
     }
