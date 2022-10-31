@@ -118,6 +118,9 @@ extension ViewController: AudioSpectrumRecorderDelegate {
 }
 
 extension ViewController: AudioSpectrumPlayerDelegate {
+    func playerStateChanged(state: AudioPlayerState) {
+        
+    }
     func player(currentDuration: Double, duration: Double, playEnded: Bool) {
         allTimeLabel.text = String(format: "%.0f", duration)
         if !slider.isTracking {

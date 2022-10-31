@@ -13,6 +13,7 @@
 		D22B6F4628F2678000B191C7 /* 02.Ellis - Clear My Head (Radio Edit) [NCS].mp3 in Resources */ = {isa = PBXBuildFile; fileRef = D22B6F4328F2677F00B191C7 /* 02.Ellis - Clear My Head (Radio Edit) [NCS].mp3 */; };
 		D22B6F4828F2693D00B191C7 /* RealtimeAnalyzer.swift in Sources */ = {isa = PBXBuildFile; fileRef = D22B6F4728F2693D00B191C7 /* RealtimeAnalyzer.swift */; };
 		D22B6F4A28F26B3300B191C7 /* SpectrumView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D22B6F4928F26B3300B191C7 /* SpectrumView.swift */; };
+		D22CC84B290F998C00575FAD /* AudioEasyPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = D22CC84A290F998C00575FAD /* AudioEasyPlayer.swift */; };
 		D23C44D228F3E74900EC63D8 /* AudioSpectrum.podspec in Resources */ = {isa = PBXBuildFile; fileRef = D23C44D128F3E74900EC63D8 /* AudioSpectrum.podspec */; };
 		D2562F4B28F7EFA00093B5DC /* AudioFileJoin.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2562F4A28F7EFA00093B5DC /* AudioFileJoin.swift */; };
 		D2B7B7CF28F150B300E08755 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2B7B7CE28F150B300E08755 /* AppDelegate.swift */; };
@@ -32,6 +33,7 @@
 		D22B6F4328F2677F00B191C7 /* 02.Ellis - Clear My Head (Radio Edit) [NCS].mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = "02.Ellis - Clear My Head (Radio Edit) [NCS].mp3"; sourceTree = "<group>"; };
 		D22B6F4728F2693D00B191C7 /* RealtimeAnalyzer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RealtimeAnalyzer.swift; sourceTree = "<group>"; };
 		D22B6F4928F26B3300B191C7 /* SpectrumView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpectrumView.swift; sourceTree = "<group>"; };
+		D22CC84A290F998C00575FAD /* AudioEasyPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioEasyPlayer.swift; sourceTree = "<group>"; };
 		D23C44D128F3E74900EC63D8 /* AudioSpectrum.podspec */ = {isa = PBXFileReference; lastKnownFileType = text; path = AudioSpectrum.podspec; sourceTree = SOURCE_ROOT; };
 		D2562F4A28F7EFA00093B5DC /* AudioFileJoin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioFileJoin.swift; sourceTree = "<group>"; };
 		D2B7B7CB28F150B300E08755 /* RecordDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = RecordDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -127,6 +129,7 @@
 			children = (
 				D22B6F4728F2693D00B191C7 /* RealtimeAnalyzer.swift */,
 				D2B7B7E328F153E100E08755 /* AudioPlayer.swift */,
+				D22CC84A290F998C00575FAD /* AudioEasyPlayer.swift */,
 				D2FA9BE828F16D0900122DE0 /* AudioRecorder.swift */,
 				D22B6F4928F26B3300B191C7 /* SpectrumView.swift */,
 				D2562F4A28F7EFA00093B5DC /* AudioFileJoin.swift */,
@@ -255,6 +258,7 @@
 			files = (
 				D2562F4B28F7EFA00093B5DC /* AudioFileJoin.swift in Sources */,
 				D2B7B7D328F150B300E08755 /* ViewController.swift in Sources */,
+				D22CC84B290F998C00575FAD /* AudioEasyPlayer.swift in Sources */,
 				D2B7B7CF28F150B300E08755 /* AppDelegate.swift in Sources */,
 				D22B6F4828F2693D00B191C7 /* RealtimeAnalyzer.swift in Sources */,
 				D22B6F4A28F26B3300B191C7 /* SpectrumView.swift in Sources */,
