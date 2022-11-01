@@ -97,6 +97,8 @@ public class AudioPlayer {
         self.frequencyBands = frequencyBands
         setupAudio()
         setRemote()
+        /// 监听中断
+        NotificationCenter.default.addObserver(self, selector: #selector(handleInterruption(_ :)), name: AVAudioSession.interruptionNotification, object: session)
         /// 监听耳机
         NotificationCenter.default.addObserver(self, selector: #selector(handleRouteChange(_ :)), name: AVAudioSession.routeChangeNotification, object: session)
         defer {
@@ -186,6 +188,15 @@ extension AudioPlayer {
     private var isEarConnect: Bool {
         let type = session.currentRoute.outputs.first?.portType ?? .builtInSpeaker
         return type == .headphones || type == .bluetoothA2DP
+    }
+    
+    @objc private func handleInterruption(_ notification: Notification) {
+        guard let info = notification.userInfo,
+              let reasonValue = info[AVAudioSessionInterruptionTypeKey] as? UInt,
+                let reason = AVAudioSession.InterruptionType(rawValue: reasonValue) else { return }
+        if reason == .began {
+            pause()
+        }
     }
     
     @objc private func handleRouteChange(_ notification: Notification) {

@@ -36,18 +36,31 @@ public class AudioEasyPlayer: NSObject {
     private lazy var timer = Timer(fire: Date.distantFuture, interval: 0.5, repeats: true) { [weak self] _ in
         self?.delegate?.player(currentDuration: self?.player?.currentTime ?? 0, duration: self?.player?.duration ?? 0)
     }
+    
+    public var coverImage: UIImage? {
+        didSet {
+            setNowPlayingCenter()
+        }
+    }
+    public var title: String? {
+        didSet {
+            setNowPlayingCenter()
+        }
+    }
     public let audioUrl: URL
     
-    public init(url: URL) {
+    public init(url: URL, title: String? = nil, coverImage: UIImage? = nil) {
         try? session.setCategory(.playback, options: .defaultToSpeaker)
         try? session.setCategory(.playback, options: .allowBluetoothA2DP)
         self.audioUrl = url
         super.init()
-        
+        self.title = title
+        self.coverImage = coverImage
         setRemote()
+        /// 监听中断
+        NotificationCenter.default.addObserver(self, selector: #selector(handleInterruption(_ :)), name: AVAudioSession.interruptionNotification, object: session)
         /// 监听耳机
         NotificationCenter.default.addObserver(self, selector: #selector(handleRouteChange(_ :)), name: AVAudioSession.routeChangeNotification, object: session)
-        
         RunLoop.main.add(timer, forMode: .common)
         player?.prepareToPlay()
     }
@@ -76,18 +89,33 @@ extension AudioEasyPlayer {
     /// 设置锁屏播放
     private func setNowPlayingCenter() {
         guard let player else { return }
-        nowPlayingC.nowPlayingInfo = [
-            MPMediaItemPropertyTitle: "正在播放",
+        var info: [String: Any] = [
+            MPMediaItemPropertyTitle: title ?? "正在播放",
             MPNowPlayingInfoPropertyElapsedPlaybackTime: player.currentTime,
             MPMediaItemPropertyPlaybackDuration: player.duration,
             MPNowPlayingInfoPropertyAssetURL: audioUrl
         ]
+        if let coverImage {
+            info[MPMediaItemPropertyArtwork] = MPMediaItemArtwork(boundsSize: coverImage.size) { size in
+                coverImage
+            }
+        }
+        nowPlayingC.nowPlayingInfo = info
     }
     
     /// 耳机是否链接
     private var isEarConnect: Bool {
         let type = session.currentRoute.outputs.first?.portType ?? .builtInSpeaker
         return type == .headphones || type == .bluetoothA2DP
+    }
+    
+    @objc private func handleInterruption(_ notification: Notification) {
+        guard let info = notification.userInfo,
+              let reasonValue = info[AVAudioSessionInterruptionTypeKey] as? UInt,
+                let reason = AVAudioSession.InterruptionType(rawValue: reasonValue) else { return }
+        if reason == .began {
+            pause()
+        }
     }
     
     @objc private func handleRouteChange(_ notification: Notification) {
@@ -142,7 +170,7 @@ extension AudioEasyPlayer {
         }
         remoteC.changePlaybackPositionCommand.addTarget { [weak self] event in
             if let event = event as? MPChangePlaybackPositionCommandEvent {
-                self?.play(at: event.positionTime)
+                self?.play(at: event.positionTime, false)
             }
             return .success
         }
@@ -168,7 +196,7 @@ extension AudioEasyPlayer {
             delegate?.playerStateChanged(state: .stop)
         }
     }
-    public func play(at time: TimeInterval) {
+    public func play(at time: TimeInterval, _ refreshNowPlay: Bool = true) {
         guard let player else { return }
         if time >= player.duration {
             pause()
@@ -177,7 +205,7 @@ extension AudioEasyPlayer {
             player.currentTime = time
             delegate?.playerStateChanged(state: player.isPlaying ? .playing : .pause)
         }
-        setNowPlayingCenter()
+        refreshNowPlay ? setNowPlayingCenter() : ()
     }
     public func pause() {
         guard let player else { return }
