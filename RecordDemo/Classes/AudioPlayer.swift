@@ -86,23 +86,19 @@ public class AudioPlayer {
     ///
     private var preTime: Double = 0
     
+    private let session = AVAudioSession.sharedInstance()
     private let nowPlayingC = MPNowPlayingInfoCenter.default()
     private let remoteC = MPRemoteCommandCenter.shared()
     
     public init(url: URL, frequencyBands: Int = 80) {
-        if let type = AVAudioSession.sharedInstance().currentRoute.outputs.first?.portType {
-            if type == .bluetoothA2DP || type == .headphones {
-                try? AVAudioSession.sharedInstance().setCategory(.playAndRecord, options: .allowBluetoothA2DP)
-            } else {
-                try? AVAudioSession.sharedInstance().setCategory(.playAndRecord, options: .defaultToSpeaker)
-            }
-        }
+        try? session.setCategory(.playback, options: .defaultToSpeaker)
+        try? session.setCategory(.playback, options: .allowBluetoothA2DP)
         self.audioUrl = url
         self.frequencyBands = frequencyBands
         setupAudio()
         setRemote()
         /// 监听耳机
-        NotificationCenter.default.addObserver(self, selector: #selector(handleRouteChange(_ :)), name: AVAudioSession.routeChangeNotification, object: AVAudioSession.sharedInstance())
+        NotificationCenter.default.addObserver(self, selector: #selector(handleRouteChange(_ :)), name: AVAudioSession.routeChangeNotification, object: session)
         defer {
             self.bufferSize = 2048
         }
@@ -132,7 +128,7 @@ extension AudioPlayer {
     public func play() {
         guard let audioFile = audioFile else { return }
 
-        syncOutputPortType()
+//        syncOutputPortType()
         try? engine.start()
         player.stop()
 //        player.scheduleFile(audioFile, at: nil, completionHandler: nil)
@@ -147,7 +143,7 @@ extension AudioPlayer {
     public func play(at time: Int) {
         guard let audioFile = audioFile else { return }
 
-        syncOutputPortType()
+//        syncOutputPortType()
         try? engine.start()
         preTime = Double(time)
         player.stop()
@@ -188,7 +184,7 @@ extension AudioPlayer {
     
     /// 耳机是否链接
     private var isEarConnect: Bool {
-        let type = AVAudioSession.sharedInstance().currentRoute.outputs.first?.portType ?? .builtInSpeaker
+        let type = session.currentRoute.outputs.first?.portType ?? .builtInSpeaker
         return type == .headphones || type == .bluetoothA2DP
     }
     
@@ -197,31 +193,31 @@ extension AudioPlayer {
               let reasonValue = info[AVAudioSessionRouteChangeReasonKey] as? UInt,
                 let reason = AVAudioSession.RouteChangeReason(rawValue: reasonValue) else { return }
         if reason == .categoryChange {
-            syncOutputPortType()
+//            syncOutputPortType()
             if !isEarConnect { pause() }
         } else if reason == .newDeviceAvailable {
             // 连接了耳机
-            syncOutputPortType()
+//            syncOutputPortType()
         } else if reason == .oldDeviceUnavailable {
             // 断开了设备
-            syncOutputPortType()
+//            syncOutputPortType()
             pause()
         }
     }
     
-    private func syncOutputPortType() {
-        if isEarConnect {
-            if AVAudioSession.sharedInstance().categoryOptions != .allowBluetoothA2DP {
-                try? AVAudioSession.sharedInstance().setCategory(.playAndRecord, options: .allowBluetoothA2DP)
-                try? AVAudioSession.sharedInstance().setActive(true)
-            }
-        } else {
-            if AVAudioSession.sharedInstance().categoryOptions != .defaultToSpeaker {
-                try? AVAudioSession.sharedInstance().setCategory(.playAndRecord, options: .defaultToSpeaker)
-                try? AVAudioSession.sharedInstance().setActive(true)
-            }
-        }
-    }
+//    private func syncOutputPortType() {
+//        if isEarConnect {
+//            if session.categoryOptions == .defaultToSpeaker {
+//                try? session.setCategory(.playAndRecord, options: .allowBluetoothA2DP)
+//                try? session.setActive(true)
+//            }
+//        } else {
+//            if session.categoryOptions != .defaultToSpeaker {
+//                try? session.setCategory(.playAndRecord, options: .defaultToSpeaker)
+//                try? session.setActive(true)
+//            }
+//        }
+//    }
     
     private func setRemote() {
         remoteC.playCommand.isEnabled = true

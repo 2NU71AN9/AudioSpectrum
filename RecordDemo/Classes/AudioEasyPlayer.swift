@@ -30,6 +30,7 @@ public class AudioEasyPlayer: NSObject {
         return player
     }()
     
+    private let session = AVAudioSession.sharedInstance()
     private let nowPlayingC = MPNowPlayingInfoCenter.default()
     private let remoteC = MPRemoteCommandCenter.shared()
     private lazy var timer = Timer(fire: Date.distantFuture, interval: 0.5, repeats: true) { [weak self] _ in
@@ -38,19 +39,14 @@ public class AudioEasyPlayer: NSObject {
     public let audioUrl: URL
     
     public init(url: URL) {
-        if let type = AVAudioSession.sharedInstance().currentRoute.outputs.first?.portType {
-            if type == .bluetoothA2DP || type == .headphones {
-                try? AVAudioSession.sharedInstance().setCategory(.playAndRecord, options: .allowBluetoothA2DP)
-            } else {
-                try? AVAudioSession.sharedInstance().setCategory(.playAndRecord, options: .defaultToSpeaker)
-            }
-        }
+        try? session.setCategory(.playback, options: .defaultToSpeaker)
+        try? session.setCategory(.playback, options: .allowBluetoothA2DP)
         self.audioUrl = url
         super.init()
         
         setRemote()
         /// 监听耳机
-        NotificationCenter.default.addObserver(self, selector: #selector(handleRouteChange(_ :)), name: AVAudioSession.routeChangeNotification, object: AVAudioSession.sharedInstance())
+        NotificationCenter.default.addObserver(self, selector: #selector(handleRouteChange(_ :)), name: AVAudioSession.routeChangeNotification, object: session)
         
         RunLoop.main.add(timer, forMode: .common)
         player?.prepareToPlay()
@@ -90,7 +86,7 @@ extension AudioEasyPlayer {
     
     /// 耳机是否链接
     private var isEarConnect: Bool {
-        let type = AVAudioSession.sharedInstance().currentRoute.outputs.first?.portType ?? .builtInSpeaker
+        let type = session.currentRoute.outputs.first?.portType ?? .builtInSpeaker
         return type == .headphones || type == .bluetoothA2DP
     }
     
@@ -99,31 +95,32 @@ extension AudioEasyPlayer {
               let reasonValue = info[AVAudioSessionRouteChangeReasonKey] as? UInt,
                 let reason = AVAudioSession.RouteChangeReason(rawValue: reasonValue) else { return }
         if reason == .categoryChange {
-            syncOutputPortType()
+//            syncOutputPortType()
             if !isEarConnect { pause() }
         } else if reason == .newDeviceAvailable {
             // 连接了耳机
-            syncOutputPortType()
+//            syncOutputPortType()
         } else if reason == .oldDeviceUnavailable {
             // 断开了设备
-            syncOutputPortType()
+//            syncOutputPortType()
             pause()
         }
     }
     
-    private func syncOutputPortType() {
-        if isEarConnect {
-            if AVAudioSession.sharedInstance().categoryOptions != .allowBluetoothA2DP {
-                try? AVAudioSession.sharedInstance().setCategory(.playAndRecord, options: .allowBluetoothA2DP)
-                try? AVAudioSession.sharedInstance().setActive(true)
-            }
-        } else {
-            if AVAudioSession.sharedInstance().categoryOptions != .defaultToSpeaker {
-                try? AVAudioSession.sharedInstance().setCategory(.playAndRecord, options: .defaultToSpeaker)
-                try? AVAudioSession.sharedInstance().setActive(true)
-            }
-        }
-    }
+//    private func syncOutputPortType() {
+//        return
+//        if isEarConnect {
+//            if session.categoryOptions == .defaultToSpeaker {
+//                try? session.setCategory(.playAndRecord, options: .allowBluetoothA2DP)
+//                try? session.setActive(true)
+//            }
+//        } else {
+//            if session.categoryOptions != .defaultToSpeaker {
+//                try? session.setCategory(.playAndRecord, options: .defaultToSpeaker)
+//                try? session.setActive(true)
+//            }
+//        }
+//    }
     
     private func setRemote() {
         remoteC.playCommand.isEnabled = true

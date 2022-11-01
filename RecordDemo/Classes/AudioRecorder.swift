@@ -47,6 +47,8 @@ public class AudioRecorder {
     /// 文件类型
     private var fileType: FileType = .wav
     public lazy var analyzer = RealtimeAnalyzer(fftSize: 2048, frequencyBands: frequencyBands)
+    
+    private let session = AVAudioSession.sharedInstance()
     private lazy var engine = AVAudioEngine()
     public lazy var recorder: AVAudioRecorder = {
         // PCM=>wav AAC=>aac
@@ -62,7 +64,10 @@ public class AudioRecorder {
     }()
         
     public init(frequencyBands: Int = 80, fileType: FileType = .wav) {
-        try? AVAudioSession.sharedInstance().setCategory(.playAndRecord, options: .defaultToSpeaker)
+        try? session.setCategory(.playAndRecord, mode: .videoRecording, options: .defaultToSpeaker)
+        try? session.setCategory(.playAndRecord, mode: .videoRecording, options: .allowBluetoothA2DP)
+        try? session.setActive(true)
+        
         let fileName = UUID().uuidString
         self.frequencyBands = frequencyBands
         self.fileType = fileType
@@ -85,7 +90,9 @@ public class AudioRecorder {
             strongSelf.delegate?.recorder(strongSelf, didGenerateSpectrum: spectra.count > 1 ? spectra : [spectra.first ?? [0], [0]])
         })
         
-        NotificationCenter.default.addObserver(self, selector: #selector(handleInterruption(_ :)), name: AVAudioSession.interruptionNotification, object: AVAudioSession.sharedInstance())
+        NotificationCenter.default.addObserver(self, selector: #selector(handleInterruption(_ :)), name: AVAudioSession.interruptionNotification, object: session)
+        /// 监听耳机
+        NotificationCenter.default.addObserver(self, selector: #selector(handleRouteChange(_ :)), name: AVAudioSession.routeChangeNotification, object: session)
     }
     
     deinit {
@@ -105,6 +112,9 @@ extension AudioRecorder {
         if let outputPath = outputPath {
             try? FileManager.default.removeItem(atPath: outputPath)
         }
+        try? session.setCategory(.playAndRecord, mode: .videoRecording, options: .defaultToSpeaker)
+        try? session.setCategory(.playAndRecord, mode: .videoRecording, options: .allowBluetoothA2DP)
+        try? session.setActive(true)
         record()
     }
     
@@ -175,6 +185,24 @@ extension AudioRecorder {
                 let reason = AVAudioSession.InterruptionType(rawValue: reasonValue) else { return }
         if reason == .began {
             pause()
+        }
+    }
+    
+    @objc private func handleRouteChange(_ notification: Notification) {
+        guard let info = notification.userInfo,
+              let reasonValue = info[AVAudioSessionRouteChangeReasonKey] as? UInt,
+                let reason = AVAudioSession.RouteChangeReason(rawValue: reasonValue) else { return }
+        if reason == .categoryChange {
+
+        } else if reason == .newDeviceAvailable {
+            // 连接了耳机
+            try? session.setPreferredInput(session.currentRoute.inputs.first)
+        } else if reason == .oldDeviceUnavailable {
+            // 断开了设备
+            try? session.setPreferredInput(session.currentRoute.inputs.first)
+        } else if reason == .override {
+            // 断开了耳机
+            try? session.setPreferredInput(session.currentRoute.inputs.first)
         }
     }
 }
